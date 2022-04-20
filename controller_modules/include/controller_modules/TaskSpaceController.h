@@ -6,6 +6,7 @@
 #include "ros/ros.h"
 #include "controller_modules/ControllerBase.h"
 #include "controller_modules/PDController.h"
+#include "controller_modules/TaskSpacePos.h"
 #include <iostream>
 #include "rbdl_server/RBDLTaskSpaceBody.h"
 #include "rbdl_server/RBDLInverseDynamics.h"
@@ -24,6 +25,8 @@ class TaskSpaceController : public ControllerBase {
           std::string model_name;
           std::string ee_body_name;
 
+          geometry_msgs::Point current_ee_point;
+
           PDController my_controller;
 
           ros::NodeHandle nh;
@@ -31,8 +34,10 @@ class TaskSpaceController : public ControllerBase {
           ros::ServiceClient client_taskSpaceBody;
           ros::ServiceClient client_invDyn;
 
-          ros::Publisher xyz_actual_pub;
+          //ros::Publisher xyz_actual_pub;
+          ros::ServiceServer xyzPos_srv;
 
+          bool TaskSpacePosSrv(controller_modules::TaskSpacePosRequest& req, controller_modules::TaskSpacePosResponse& res);
 
           void actual_to_task(const trajectory_msgs::JointTrajectoryPoint& actual, trajectory_msgs::JointTrajectoryPoint& actual_task_space, Eigen::MatrixXd &jacobian);
           void calculate_xdd(const trajectory_msgs::JointTrajectoryPoint& actual, const trajectory_msgs::JointTrajectoryPoint& desired, Eigen::VectorXd &xdd);

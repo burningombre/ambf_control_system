@@ -13,13 +13,25 @@ TaskSpaceController::TaskSpaceController(const std::string name, const std::stri
     client_taskSpaceBody = nh.serviceClient<rbdl_server::RBDLTaskSpaceBody>("TaskSpaceBody");
     client_invDyn = nh.serviceClient<rbdl_server::RBDLInverseDynamics>("InverseDynamics");
 
-    xyz_actual_pub = nh.advertise<geometry_msgs::Point>("xyz_actual", 1000);
+    //xyz_actual_pub = nh.advertise<geometry_msgs::Point>("xyz_actual", 1000);
+    xyzPos_srv = nh.advertiseService("xyzPos", &TaskSpaceController::TaskSpacePosSrv, this);
 
 }
 
 
 TaskSpaceController::~TaskSpaceController() {
 
+}
+
+
+/**
+*
+*
+**/
+bool TaskSpaceController::TaskSpacePosSrv(controller_modules::TaskSpacePosRequest& req, controller_modules::TaskSpacePosResponse& res) {
+
+    res.point = current_ee_point;
+    return true;
 }
 
 
@@ -47,7 +59,9 @@ void TaskSpaceController::actual_to_task(const trajectory_msgs::JointTrajectoryP
         task_space_pos[1] = ee_point.y;
         task_space_pos[2] = ee_point.z;
         actual_task_space.positions = task_space_pos;
-        printf("EE point: %f, %f, %f\n", ee_point.x, ee_point.y, ee_point.z);
+
+        current_ee_point = ee_point;                                                // update the global used in the service call
+        printf("EE point: %f, %f, %f\n", ee_point.x, ee_point.y, ee_point.z);       // printing for testing
 
         // Velocity (linear part) of EE
         std::vector<double> ee_vel_full(taskSpaceBody_msg.response.velocity.begin(), taskSpaceBody_msg.response.velocity.end());
@@ -68,7 +82,7 @@ void TaskSpaceController::actual_to_task(const trajectory_msgs::JointTrajectoryP
         //printf("EE jacobian: %f\n", ee_jacobian.data[1]);
 
         // Publishing
-        xyz_actual_pub.publish(ee_point);
+        //xyz_actual_pub.publish(ee_point);
 
     }
 

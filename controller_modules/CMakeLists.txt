@@ -38,6 +38,7 @@ add_service_files(
   FILES
   JointControl.srv  
   ControllerList.srv
+  TaskSpacePos.srv
 )
 
 generate_messages(
