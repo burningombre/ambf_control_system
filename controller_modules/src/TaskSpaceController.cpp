@@ -13,7 +13,7 @@ TaskSpaceController::TaskSpaceController(const std::string name, const std::stri
     client_taskSpaceBody = nh.serviceClient<rbdl_server::RBDLTaskSpaceBody>("TaskSpaceBody");
     client_invDyn = nh.serviceClient<rbdl_server::RBDLInverseDynamics>("InverseDynamics");
 
-    xyz_actual_pub = nh.advertise<std_msgs::Float64MultiArray>("xyz_actual", 1000);
+    xyz_actual_pub = nh.advertise<geometry_msgs::Point>("xyz_actual", 1000);
 
 }
 
@@ -27,6 +27,7 @@ TaskSpaceController::~TaskSpaceController() {
 *   Calculate the end-effector (ee) position and velocity of the model in the task space
 *   @param actual is the message containing the joint angles/velocities of the model in the generalized space
 *   @param actual_task_space is the resulting model ee position and velocity in the task space
+*   @param jacobian is the Jacobian matrix of the ee w.r.t. the base
 **/
 void TaskSpaceController::actual_to_task(const trajectory_msgs::JointTrajectoryPoint& actual, trajectory_msgs::JointTrajectoryPoint& actual_task_space, Eigen::MatrixXd &jacobian) {
 
@@ -66,11 +67,8 @@ void TaskSpaceController::actual_to_task(const trajectory_msgs::JointTrajectoryP
         jacobian = jacobV;
         //printf("EE jacobian: %f\n", ee_jacobian.data[1]);
 
-
         // Publishing
-        std_msgs::Float64MultiArray xyz_actual;
-        xyz_actual.data = task_space_pos; //std::vector<float>(xyzPosDesired.begin(), xyzPosDesired.end());
-        xyz_actual_pub.publish(xyz_actual);
+        xyz_actual_pub.publish(ee_point);
 
     }
 
